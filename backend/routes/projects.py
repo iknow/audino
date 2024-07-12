@@ -135,6 +135,7 @@ def fetch_project(project_id):
             users=users,
             labels=labels,
             api_key=project.api_key,
+            allow_all_users=project.allow_all_users,
             created_by=project.creator_user.username,
             created_on=project.created_at.strftime("%B %d, %Y"),
         ),
@@ -156,6 +157,7 @@ def update_project_users(project_id):
         return jsonify(message="Missing JSON in request"), 400
 
     users = request.json.get("users", [])
+    allow_all_users = request.json.get("allow_all_users", False)
 
     if type(users) != list:
         return (
@@ -178,6 +180,7 @@ def update_project_users(project_id):
                 final_users.append(user)
 
         project.users = final_users
+        project.allow_all_users = allow_all_users
 
         db.session.add(project)
         db.session.commit()
@@ -387,7 +390,7 @@ def get_labels_for_project(project_id):
         request_user = User.query.filter_by(username=identity["username"]).first()
         project = Project.query.get(project_id)
 
-        if request_user not in project.users:
+        if project.allow_all_users == False and request_user not in project.users:
             return jsonify(message="Unauthorized access!"), 401
 
         labels = project.labels
@@ -422,7 +425,7 @@ def get_segmentations_for_data(project_id, data_id):
         request_user = User.query.filter_by(username=identity["username"]).first()
         project = Project.query.get(project_id)
 
-        if request_user not in project.users:
+        if project.allow_all_users == False and request_user not in project.users:
             return jsonify(message="Unauthorized access!"), 401
 
         data = Data.query.filter_by(id=data_id, project_id=project_id).first()
@@ -485,12 +488,12 @@ def update_data(project_id, data_id):
         request_user = User.query.filter_by(username=identity["username"]).first()
         project = Project.query.get(project_id)
 
-        if request_user not in project.users:
+        if project.allow_all_users == False and request_user not in project.users:
             return jsonify(message="Unauthorized access!"), 401
 
         data = Data.query.filter_by(id=data_id, project_id=project_id).first()
 
-        if request_user != data.assigned_user:
+        if project.allow_all_users == False and request_user != data.assigned_user:
             return jsonify(message="Unauthorized access!"), 401
 
         data.update_marked_review(is_marked_for_review)
@@ -555,12 +558,12 @@ def add_segmentations(project_id, data_id, segmentation_id=None):
         request_user = User.query.filter_by(username=identity["username"]).first()
         project = Project.query.get(project_id)
 
-        if request_user not in project.users:
+        if project.allow_all_users == False and request_user not in project.users:
             return jsonify(message="Unauthorized access!"), 401
 
         data = Data.query.filter_by(id=data_id, project_id=project_id).first()
 
-        if request_user != data.assigned_user:
+        if project.allow_all_users == False and request_user != data.assigned_user:
             return jsonify(message="Unauthorized access!"), 401
 
         segmentation = generate_segmentation(
@@ -614,12 +617,12 @@ def delete_segmentations(project_id, data_id, segmentation_id):
         request_user = User.query.filter_by(username=identity["username"]).first()
         project = Project.query.get(project_id)
 
-        if request_user not in project.users:
+        if project.allow_all_users == False and request_user not in project.users:
             return jsonify(message="Unauthorized access!"), 401
 
         data = Data.query.filter_by(id=data_id, project_id=project_id).first()
 
-        if request_user != data.assigned_user:
+        if project.allow_all_users == False and request_user != data.assigned_user:
             return jsonify(message="Unauthorized access!"), 401
 
         segmentation = Segmentation.query.filter_by(
@@ -661,7 +664,7 @@ def get_project_annotations(project_id):
             joinedload(Project.data).joinedload(Data.segmentations).joinedload(Segmentation.values)
         ).get(project_id)
 
-        if request_user not in project.users:
+        if project.allow_all_users == False and request_user not in project.users:
             return jsonify(message="Unauthorized access!"), 401
 
         annotations = []

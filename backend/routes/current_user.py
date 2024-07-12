@@ -29,6 +29,19 @@ def fetch_current_user_projects():
                 for project in request_user.projects
             ]
         )
+        ids = [p["project_id"] for p in response]
+        response.extend(list(
+            [
+                {
+                    "project_id": project.id,
+                    "name": project.name,
+                    "created_by": project.creator_user.username,
+                    "created_on": project.created_at.strftime("%B %d, %Y"),
+                }
+                for project in Project.default_projects() if project.id not in ids
+            ]
+        ))
+
     except Exception as e:
         message = "Error fetching all projects"
         app.logger.error(message)
@@ -50,7 +63,7 @@ def fetch_data_for_project(project_id):
         request_user = User.query.filter_by(username=identity["username"]).first()
         project = Project.query.get(project_id)
 
-        if request_user not in project.users:
+        if project.allow_all_users == False and request_user not in project.users:
             return jsonify(message="Unauthorized access!"), 401
 
         segmentations = db.session.query(Segmentation.data_id).distinct().subquery()

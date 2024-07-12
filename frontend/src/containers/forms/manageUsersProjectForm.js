@@ -18,6 +18,7 @@ class ManageUsersProjectForm extends React.Component {
       projectName: this.props.projectName,
       users: [],
       selectedUsers: [],
+      allowAllUsers: false,
       errorMessage: "",
       successMessage: "",
       isLoading: false,
@@ -41,8 +42,10 @@ class ManageUsersProjectForm extends React.Component {
         const selectedUsers = response[0].data.users.map((user) =>
           Number(user["user_id"])
         );
+        const allowAllUsers = response[0].data.allow_all_users;
         this.setState({
           selectedUsers,
+          allowAllUsers,
           users: response[1].data.users,
           isLoading: false,
         });
@@ -60,12 +63,16 @@ class ManageUsersProjectForm extends React.Component {
     this.setState({ selectedUsers: users });
   }
 
+  handleAllowAllUsersChange(e) {
+    this.setState({ allowAllUsers: e.target.checked });
+  }
+
   handleManageUsersProject(e) {
     e.preventDefault();
 
     this.setState({ isSubmitting: true });
 
-    const { selectedUsers, updateUsersProject } = this.state;
+    const { selectedUsers, updateUsersProject, allowAllUsers } = this.state;
 
     if (!selectedUsers || !Array.isArray(selectedUsers)) {
       this.setState({
@@ -80,6 +87,7 @@ class ManageUsersProjectForm extends React.Component {
       method: "patch",
       url: updateUsersProject,
       data: {
+        allow_all_users: allowAllUsers,
         users: selectedUsers,
       },
     })
@@ -160,6 +168,16 @@ class ManageUsersProjectForm extends React.Component {
                       );
                     })}
                   </select>
+                </div>
+                <div className="form-row">
+                  <div className="form-group col">
+                    <input
+                      type="checkbox"
+                      checked={this.state.allowAllUsers}
+                      onChange={(e) => this.handleAllowAllUsersChange(e)}
+                    />
+                    Allow all users
+                  </div>
                 </div>
                 <div className="form-row">
                   <div className="form-group col">

@@ -225,6 +225,9 @@ class Project(db.Model):
         onupdate=db.func.utc_timestamp(),
     )
 
+    allow_all_users = db.Column(
+        "allow_all_users", db.Boolean(), nullable=False, default=True)
+
     users = db.relationship(
         "User", secondary=user_project_table, back_populates="projects"
     )
@@ -232,6 +235,9 @@ class Project(db.Model):
     labels = db.relationship("Label", backref="Project")
     creator_user = db.relationship("User")
 
+    @classmethod
+    def default_projects(cls):
+        return cls.query.filter_by(allow_all_users=True).all()
 
 class Role(db.Model):
     __tablename__ = "role"
