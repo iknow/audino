@@ -19,3 +19,5 @@ Werkzeug==0.16.0
 WTForms==2.2.1
 flask-jwt-extended==3.25
 flask-redis==0.4.0
+Authlib==0.15.6
+requests==2.31.0

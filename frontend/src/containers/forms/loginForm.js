@@ -135,6 +135,11 @@ class LoginForm extends React.Component {
             text="Login"
           />
         </div>
+        <div className="form-group">
+          <a size="lg" type="primary" href="/auth/google">
+            Login With Google
+          </a>
+        </div>
       </form>
     );
   }

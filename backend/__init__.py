@@ -22,7 +22,7 @@ def create_app():
 
 
 app = create_app()
-
+app.secret_key = app.config['JWT_SECRET_KEY']
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 jwt = JWTManager(app)

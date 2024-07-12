@@ -21,6 +21,7 @@ import {
   Annotate,
 } from "./pages";
 import NavBar from "./containers/navbar";
+import { setAuthorizationToken } from "./utils";
 
 const history = createBrowserHistory();
 
@@ -66,7 +67,16 @@ class App extends React.Component {
       isAdmin: false,
     };
   }
+
   componentDidMount() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const accessToken = urlParams.get('access_token');
+
+    if (accessToken) {
+      localStorage.setItem("access_token", accessToken);
+      setAuthorizationToken(accessToken);
+    }
+
     axios({
       method: "post",
       url: "/auth/is_logged_in",
