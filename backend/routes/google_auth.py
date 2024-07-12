@@ -41,9 +41,13 @@ def google_callback():
         db.session.add(user)
         db.session.commit()
 
+    is_admin = True if user.role.role == "admin" else False
     access_token = create_access_token(
-        identity={"username": username, "is_admin": False, "user_id":
-                  user.id},
+        identity={
+            "username": username,
+            "is_admin": is_admin,
+            "user_id":  user.id
+        },
         fresh=True,
         expires_delta=app.config["JWT_ACCESS_TOKEN_EXPIRES"],
     )
@@ -51,5 +55,5 @@ def google_callback():
     redis_client.set(access_jti, "false",
                      app.config["JWT_ACCESS_TOKEN_EXPIRES"] * 1.2)
 
-    # Redirect to frontend with access token
-    return redirect(f"/?access_token={access_token}")
+    # Redirect to frontend with access token using hash fragment
+    return redirect(f"/#access_token={access_token}")
