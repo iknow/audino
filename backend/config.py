@@ -17,7 +17,7 @@ class Config(object):
     JWT_BLACKLIST_ENABLED = True
     JWT_HEADER_TYPE = None
     JWT_BLACKLIST_TOKEN_CHECKS = ["access"]
-    UPLOAD_FOLDER = './uploads'
+    UPLOAD_FOLDER = os.environ.get("UPLOAD_FOLDER", './uploads')
     GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
     GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET")
     GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
