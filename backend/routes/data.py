@@ -15,7 +15,7 @@ from backend.models import Data, Project, User, Segmentation, Label, LabelValue
 
 from . import api
 
-ALLOWED_EXTENSIONS = ["wav", "mp3", "ogg"]
+ALLOWED_EXTENSIONS = ["wav", "mp3", "ogg", "m4a"]
 
 
 @api.route("/audio/<path:file_name>", methods=["GET"])
