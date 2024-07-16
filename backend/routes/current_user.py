@@ -61,6 +61,7 @@ def fetch_data_for_project(project_id):
 
     try:
         request_user = User.query.filter_by(username=identity["username"]).first()
+        is_admin = True if request_user.role.role == "admin" else False
         project = Project.query.get(project_id)
 
         if project.allow_all_users == False and request_user not in project.users:
@@ -70,9 +71,12 @@ def fetch_data_for_project(project_id):
 
         data = {}
 
+        data_query = db.session.query(Data)
+        if not is_admin or request.args.get("showAll", type=str) != "true":
+            data_query = data_query.filter(Data.assigned_user_id == request_user.id)
+
         data["pending"] = (
-            db.session.query(Data)
-            .filter(Data.assigned_user_id == request_user.id)
+            data_query
             .filter(Data.project_id == project_id)
             .filter(Data.id.notin_(segmentations))
             .distinct()
@@ -80,22 +84,20 @@ def fetch_data_for_project(project_id):
         )
 
         data["completed"] = (
-            db.session.query(Data)
-            .filter(Data.assigned_user_id == request_user.id)
+            data_query
             .filter(Data.project_id == project_id)
             .filter(Data.id.in_(segmentations))
             .distinct()
             .order_by(Data.last_modified.desc())
         )
 
-        data["marked_review"] = Data.query.filter_by(
-            assigned_user_id=request_user.id,
+        data["marked_review"] = data_query.filter_by(
             project_id=project_id,
             is_marked_for_review=True,
         ).order_by(Data.last_modified.desc())
 
-        data["all"] = Data.query.filter_by(
-            assigned_user_id=request_user.id, project_id=project_id
+        data["all"] = data_query.filter_by(
+            project_id=project_id
         ).order_by(Data.last_modified.desc())
 
         paginated_data = data[active].paginate(page, 10, False)

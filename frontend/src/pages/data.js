@@ -2,6 +2,7 @@ import axios from "axios";
 import React from "react";
 import { Helmet } from "react-helmet";
 import { withRouter } from "react-router-dom";
+import { withStore } from "@spyna/react-store";
 
 import Loader from "../components/loader";
 
@@ -13,11 +14,13 @@ class Data extends React.Component {
 
     const { location } = this.props;
     const params = new URLSearchParams(location.search);
+    const showAll = params.get("showAll") === "true";
     this.state = {
       projectId,
       data: [],
       active: params.get("active") || "pending",
       page: params.get("page") || 1,
+      showAll,
       count: {
         pending: 0,
         completed: 0,
@@ -26,10 +29,10 @@ class Data extends React.Component {
       },
       apiUrl: `/api/current_user/projects/${projectId}/data`,
       tabUrls: {
-        pending: this.prepareUrl(projectId, 1, "pending"),
-        completed: this.prepareUrl(projectId, 1, "completed"),
-        all: this.prepareUrl(projectId, 1, "all"),
-        marked_review: this.prepareUrl(projectId, 1, "marked_review"),
+        pending: this.prepareUrl(projectId, 1, "pending", showAll),
+        completed: this.prepareUrl(projectId, 1, "completed", showAll),
+        all: this.prepareUrl(projectId, 1, "all", showAll),
+        marked_review: this.prepareUrl(projectId, 1, "marked_review", showAll),
       },
       nextPage: null,
       prevPage: null,
@@ -37,14 +40,14 @@ class Data extends React.Component {
     };
   }
 
-  prepareUrl(projectId, page, active) {
-    return `/projects/${projectId}/data?page=${page}&active=${active}`;
+  prepareUrl(projectId, page, active, showAll) {
+    return `/projects/${projectId}/data?page=${page}&active=${active}&showAll=${showAll}`;
   }
 
   componentDidMount() {
     this.setState({ isDataLoading: true });
-    let { apiUrl, page, active } = this.state;
-    apiUrl = `${apiUrl}?page=${page}&active=${active}`;
+    let { apiUrl, page, active, showAll } = this.state;
+    apiUrl = `${apiUrl}?page=${page}&active=${active}&showAll=${showAll}`;
 
     axios({
       method: "get",
@@ -84,14 +87,17 @@ class Data extends React.Component {
       data,
       count,
       active,
+      showAll,
       page,
       nextPage,
       prevPage,
       tabUrls,
     } = this.state;
 
-    const nextPageUrl = this.prepareUrl(projectId, nextPage, active);
-    const prevPageUrl = this.prepareUrl(projectId, prevPage, active);
+    const nextPageUrl = this.prepareUrl(projectId, nextPage, active, showAll);
+    const prevPageUrl = this.prepareUrl(projectId, prevPage, active, showAll);
+
+    const isAdmin = this.props.store.get("isAdmin");
 
     return (
       <div>
@@ -105,6 +111,15 @@ class Data extends React.Component {
                 <h1>Data</h1>
               </div>
             </div>
+            {isAdmin && (
+              <label>
+                <input type="checkbox" checked={showAll} onChange={(event) => {
+                  window.location = this.prepareUrl(projectId, prevPage, active, event.currentTarget.checked);
+                }} />
+                {' '}
+                Show data for all users
+              </label>
+            )}
             {!isDataLoading ? (
               <div>
                 <div className="col justify-content-left my-3">
@@ -213,4 +228,4 @@ class Data extends React.Component {
   }
 }
 
-export default withRouter(Data);
+export default withStore(withRouter(Data));
