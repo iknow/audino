@@ -91,8 +91,6 @@ class App extends React.Component {
         }
         if (history.location.pathname === "/") {
           history.push("/dashboard");
-        } else {
-          history.push(history.location.pathname);
         }
       })
       .catch((error) => {
