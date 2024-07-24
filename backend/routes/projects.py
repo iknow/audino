@@ -563,9 +563,6 @@ def add_segmentations(project_id, data_id, segmentation_id=None):
 
         data = Data.query.filter_by(id=data_id, project_id=project_id).first()
 
-        if project.allow_all_users == False and request_user != data.assigned_user:
-            return jsonify(message="Unauthorized access!"), 401
-
         segmentation = generate_segmentation(
             data_id=data_id,
             project_id=project.id,
