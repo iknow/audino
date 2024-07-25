@@ -114,7 +114,7 @@ class Data extends React.Component {
             {isAdmin && (
               <label>
                 <input type="checkbox" checked={showAll} onChange={(event) => {
-                  window.location = this.prepareUrl(projectId, prevPage, active, event.currentTarget.checked);
+                  window.location = this.prepareUrl(projectId, page, active, event.currentTarget.checked);
                 }} />
                 {' '}
                 Show data for all users
